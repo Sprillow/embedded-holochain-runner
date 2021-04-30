@@ -9,6 +9,13 @@ are found in the given directory, it will simply re-use the `admin_ws_port` `app
 
 It will pair nicely with structopt to make a configurable service. See [demo](https://github.com/Sprillow/embedded-holochain-demo).
 
+In either case, 
+- first run/installation
+- second run/reboot
+it will log this to the console when the interfaces are all ready and the app installed or running:
+
+`EMBEDDED_HOLOCHAIN_IS_READY`
+
 ## Usage
 
 `Cargo.toml`
