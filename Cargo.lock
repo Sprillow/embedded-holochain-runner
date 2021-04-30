@@ -2407,8 +2407,7 @@ checksum = "7fb9b38af92608140b86b693604b9ffcc5824240a484d1ecd4795bacb2fe88f3"
 [[package]]
 name = "lmdb-rkv"
 version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "447a296f7aca299cfbb50f4e4f3d49451549af655fb7215d7f8c0c3d64bad42b"
+source = "git+https://github.com/holochain/lmdb-rs.git#460436146fab02d9523ac1b810fddc2eb4984655"
 dependencies = [
  "bitflags",
  "byteorder",
@@ -2419,8 +2418,7 @@ dependencies = [
 [[package]]
 name = "lmdb-rkv-sys"
 version = "0.11.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b27470ac25167b3afdfb6af8fcd3bc1be67de50ffbdaf4073378cfded6ae24a5"
+source = "git+https://github.com/holochain/lmdb-rs.git#460436146fab02d9523ac1b810fddc2eb4984655"
 dependencies = [
  "cc",
  "libc",
@@ -3631,8 +3629,7 @@ dependencies = [
 [[package]]
 name = "rkv"
 version = "0.10.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30a3dbc1f4971372545ed4175f23ef206c81e5874cd574d153646e7ee78f6793"
+source = "git+https://github.com/holochain/rkv.git?branch=master#6f6b4b5adc1eb6fe4a8f9587f3a3083cafadf0a1"
 dependencies = [
  "arrayref",
  "bincode",

@@ -14,7 +14,8 @@ serde = "*"
 tokio = { version = "0.2.11", features = [ "full" ] }
 futures = "0.3.1"
 human-panic = "1.0.3"
-tracing = "=0.1.21"
+# use whatever hdk uses
+tracing = "*"
 tokio_helper = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "tokio_helper"}
 holochain_p2p = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_p2p"}
 holochain_types = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_types"}
@@ -22,3 +23,7 @@ holochain_zome_types = {git = "https://github.com/holochain/holochain.git", rev 
 holochain_keystore = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_keystore"}
 holochain = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain"}
 hdk = { git = "https://github.com/holochain/holochain", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "hdk" }
+
+[patch.crates-io]
+rkv = { git = "https://github.com/holochain/rkv.git", branch = "master" }
+lmdb-rkv = { git = "https://github.com/holochain/lmdb-rs.git" }
