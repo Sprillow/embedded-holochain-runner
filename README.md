@@ -41,3 +41,7 @@ fn main() {
 It will clearly log its configuration to the console.
 
 RUST_LOG environment variable can be set to get details logs from Holochain. Those logs are by default suppressed.
+
+## Bootstrap Networking Service
+
+This library is currently pointed at the `https://bootstrap-staging.holo.host` node discovery service.
