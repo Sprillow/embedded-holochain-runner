@@ -1,0 +1,24 @@
+[package]
+name = "embedded_holochain_runner"
+version = "0.0.1"
+authors = ["Connor Turland <connor@sprillow.com>"]
+edition = "2018"
+
+[lib]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# use whatever hdk uses
+serde = "*"
+tokio = { version = "0.2.11", features = [ "full" ] }
+futures = "0.3.1"
+human-panic = "1.0.3"
+tracing = "=0.1.21"
+tokio_helper = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "tokio_helper"}
+holochain_p2p = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_p2p"}
+holochain_types = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_types"}
+holochain_zome_types = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_zome_types"}
+holochain_keystore = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain_keystore"}
+holochain = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "holochain"}
+hdk = { git = "https://github.com/holochain/holochain", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "hdk" }
