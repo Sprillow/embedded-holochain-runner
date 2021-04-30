@@ -12,6 +12,7 @@ It will pair nicely with structopt to make a configurable service. See [demo](ht
 In either case, 
 - first run/installation
 - second run/reboot
+
 it will log this to the console when the interfaces are all ready and the app installed or running:
 
 `EMBEDDED_HOLOCHAIN_IS_READY`
@@ -23,6 +24,10 @@ it will log this to the console when the interfaces are all ready and the app in
 ```toml
 [dependencies]
 embedded_holochain_runner = { git = "https://github.com/Sprillow/embedded-holochain-runner.git" }
+
+[patch.crates-io]
+rkv = { git = "https://github.com/holochain/rkv.git", branch = "master" }
+lmdb-rkv = { git = "https://github.com/holochain/lmdb-rs.git" }
 ```
 
 Assuming you have a compiled Holochain DNA file sitting around at `../dna/sample/sample.dna`...
