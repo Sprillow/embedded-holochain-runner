@@ -52,6 +52,7 @@ This library is currently pointed at the `https://bootstrap-staging.holo.host` n
 
 The HDK used for your DNA should match the version used in this library, which is listed below.
 Such as:
+
 Zome `Cargo.toml`
 ```toml
 [dependencies]
