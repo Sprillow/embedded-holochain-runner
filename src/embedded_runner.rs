@@ -6,7 +6,10 @@ use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::o
 };
 use holochain_types::app::InstalledAppId;
 use std::path::Path;
+use tokio::sync::mpsc;
 use tracing::*;
+
+use crate::emit::{emit, StateSignal};
 
 pub struct HcConfig {
     pub app_id: String,
@@ -16,13 +19,14 @@ pub struct HcConfig {
     pub datastore_path: String,
     pub keystore_path: String,
     pub proxy_url: String,
+    pub event_channel: Option<mpsc::Sender<StateSignal>>,
 }
 
-pub fn async_main(hc_config: HcConfig) {
-    tokio_helper::block_forever_on(inner_async_main(hc_config))
+pub fn main(hc_config: HcConfig) {
+    tokio_helper::block_forever_on(async_main(hc_config))
 }
 
-pub async fn inner_async_main(hc_config: HcConfig) {
+pub async fn async_main(hc_config: HcConfig) {
     // Sets up a human-readable panic message with a request for bug reports
     // See https://docs.rs/human-panic/1.0.3/human_panic/
     human_panic::setup_panic!();
@@ -32,10 +36,13 @@ pub async fn inner_async_main(hc_config: HcConfig) {
     // Uncomment this to get regular networking info status updates in the logs
     // kitsune_p2p_types::metrics::init_sys_info_poll();
     if !Path::new(&hc_config.datastore_path).exists() {
+        emit(&hc_config.event_channel, StateSignal::IsFirstRun).await;
         if let Err(e) = std::fs::create_dir(&hc_config.datastore_path) {
             error!("{}", e);
             panic!()
         };
+    } else {
+        emit(&hc_config.event_channel, StateSignal::IsNotFirstRun).await;
     }
     // run up a conductor
     let conductor = conductor_handle(
@@ -54,9 +61,11 @@ pub async fn inner_async_main(hc_config: HcConfig) {
         hc_config.app_id,
         hc_config.app_ws_port,
         hc_config.dnas,
+        &hc_config.event_channel,
     )
     .await
     .unwrap();
+    emit(&hc_config.event_channel, StateSignal::IsReady).await;
     println!("APP_WS_PORT: {}", used_app_ws_port);
     println!("INSTALLED_APP_ID: {}", used_app_id);
     println!("EMBEDDED_HOLOCHAIN_IS_READY");
@@ -92,6 +101,7 @@ async fn install_or_passthrough(
     app_id: InstalledAppId,
     app_ws_port: u16,
     dnas: Vec<(Vec<u8>, String)>,
+    event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<(InstalledAppId, u16)> {
     let app_ids = conductor.list_active_apps().await?;
     // defaults
@@ -100,11 +110,12 @@ async fn install_or_passthrough(
 
     if app_ids.len() == 0 {
         println!("Don't see existing files or identity, so starting fresh...");
-        super::install_activate::install_app(&conductor, app_id.clone(), dnas).await?;
+        super::install_activate::install_app(&conductor, app_id.clone(), dnas, event_channel).await?;
         println!("Installed, now activating...");
-        super::install_activate::activate_app(&conductor, app_id).await?;
+        super::install_activate::activate_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run
         // it will boot again at the same interface on second run
+        emit(&event_channel, StateSignal::AddingAppInterface).await;
         conductor.clone().add_app_interface(app_ws_port).await?;
         println!("Activated.");
     } else {

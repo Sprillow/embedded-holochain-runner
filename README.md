@@ -9,7 +9,8 @@ are found in the given directory, it will simply re-use the `admin_ws_port` `app
 
 It will pair nicely with structopt to make a configurable service. See [demo](https://github.com/Sprillow/embedded-holochain-demo).
 
-In either case, 
+In either case,
+
 - first run/installation
 - second run/reboot
 
@@ -40,7 +41,7 @@ const SAMPLE_DNA: &'static [u8] = include_bytes!("../dna/sample/sample.dna");
 fn main() {
     // String is like "CellNick"/"SlotId"
     let dnas: Vec<(Vec<u8>, String)> = vec![(SAMPLE_DNA.into(), "sample".into())];
-    async_main(HcConfig {
+    main(HcConfig {
         datastore_path: String::from("databases"),
         keystore_path: String::from("keystore"),
         app_id: String::from("my-app-id"),
@@ -48,6 +49,7 @@ fn main() {
         admin_ws_port: 1234,
         app_ws_port: 8888,
         proxy_url: String::from("kitsune-proxy://SYVd4CF3BdJ4DS7KwLLgeU3_DbHoZ34Y-qroZ79DOs8/kitsune-quic/h/165.22.32.11/p/5779/--"),
+        event_channel: None,
     })
 }
 ```
@@ -55,6 +57,30 @@ fn main() {
 It will clearly log its configuration to the console.
 
 RUST_LOG environment variable can be set to get details logs from Holochain. Those logs are by default suppressed.
+
+## Events
+
+if you pass an `event_channel`, which should be of type: `Option<tokio::sync::mpsc::Sender<StateSignal>>` where `StateSignal` can be imported via `use embedded_holochain_runner::StateSignal`, you can listen for the following events, to trigger external actions.
+
+It looks like:
+
+```rust
+pub enum StateSignal {
+    // will be only one or the other of these
+    IsFirstRun,
+    IsNotFirstRun,
+    // are sub events after IsFirstRun
+    CreatingKeys,
+    RegisteringDna,
+    InstallingApp,
+    ActivatingApp,
+    SettingUpCells,
+    AddingAppInterface,
+    // Done/Ready Event, called when websocket interfaces and
+    // everything else is ready
+    IsReady,
+}
+```
 
 ## Bootstrap Networking Service
 
@@ -66,6 +92,7 @@ The HDK used for your DNA should match the version used in this library, which i
 Such as:
 
 Zome `Cargo.toml`
+
 ```toml
 [dependencies]
 # use whatever hdk uses

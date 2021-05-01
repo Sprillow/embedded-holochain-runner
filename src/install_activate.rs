@@ -10,18 +10,24 @@ use holochain_types::{
     prelude::{DnaBundle, InstalledCell},
 };
 use holochain_zome_types::CellId;
+use tokio::sync::mpsc;
+
+use crate::emit::{emit, StateSignal};
 
 pub async fn install_app(
     conductor_handle: &ConductorHandle,
     app_id: InstalledAppId,
     dnas: Vec<(Vec<u8>, String)>,
+    event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
+    emit(event_channel, StateSignal::CreatingKeys).await;
     println!("Don't recognize you, so generating a new identity for you...");
     let agent_key = conductor_handle
         .keystore()
         .clone()
         .generate_sign_keypair_from_pure_entropy()
         .await?;
+    emit(event_channel, StateSignal::RegisteringDna).await;
     println!("Your new private keys are generated, continuing with the installation...");
     // register any dnas
     let tasks = dnas.into_iter().map(|(dna_bytes, nick)| {
@@ -41,6 +47,7 @@ pub async fn install_app(
         .into_iter()
         // Check all passed and return the proofs
         .collect::<Result<Vec<_>, _>>()?;
+    emit(event_channel, StateSignal::InstallingApp).await;
     // Install the CellIds as an "app", with an installed_app_id
     conductor_handle
         .clone()
@@ -52,10 +59,13 @@ pub async fn install_app(
 pub async fn activate_app(
     conductor_handle: &ConductorHandle,
     app_id: InstalledAppId,
+    event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
     // Activate app
+    emit(event_channel, StateSignal::ActivatingApp).await;
     conductor_handle.activate_app(app_id.clone()).await?;
     // Create cells
+    emit(event_channel, StateSignal::SettingUpCells).await;
     let errors = conductor_handle.clone().setup_cells().await?;
     // Check if this app was created successfully
     errors
