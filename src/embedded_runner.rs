@@ -22,7 +22,7 @@ pub fn async_main(hc_config: HcConfig) {
     tokio_helper::block_forever_on(inner_async_main(hc_config))
 }
 
-async fn inner_async_main(hc_config: HcConfig) {
+pub async fn inner_async_main(hc_config: HcConfig) {
     // Sets up a human-readable panic message with a request for bug reports
     // See https://docs.rs/human-panic/1.0.3/human_panic/
     human_panic::setup_panic!();
