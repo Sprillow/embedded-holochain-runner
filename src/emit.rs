@@ -1,7 +1,7 @@
 use tokio::sync::mpsc;
 use tracing::error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StateSignal {
     IsFirstRun,
     IsNotFirstRun,
