@@ -54,21 +54,28 @@ pub async fn async_main(hc_config: HcConfig) {
     .await;
     println!("DATASTORE_PATH: {}", hc_config.datastore_path);
     println!("KEYSTORE_PATH: {}", hc_config.keystore_path);
+
     // install the app with its dnas, if they aren't already
     // as well as adding the app_ws_port
-    let (used_app_id, used_app_ws_port) = install_or_passthrough(
-        &conductor,
-        hc_config.app_id,
-        hc_config.app_ws_port,
-        hc_config.dnas,
-        &hc_config.event_channel,
-    )
-    .await
-    .unwrap();
-    emit(&hc_config.event_channel, StateSignal::IsReady).await;
-    println!("APP_WS_PORT: {}", used_app_ws_port);
-    println!("INSTALLED_APP_ID: {}", used_app_id);
-    println!("EMBEDDED_HOLOCHAIN_IS_READY");
+    let conductor_copy = conductor.clone();
+    let _handle = tokio::task::spawn(async move {
+        match install_or_passthrough(
+            &conductor_copy,
+            hc_config.app_id,
+            hc_config.app_ws_port,
+            hc_config.dnas,
+            &hc_config.event_channel,
+        )
+        .await
+        {
+            Ok(_) => {}
+            Err(e) => {
+                error!("{}", e);
+                panic!()
+            }
+        }
+    });
+
     // Await on the main JoinHandle, keeping the process alive until all
     // Conductor activity has ceased
     let result = conductor
@@ -102,7 +109,7 @@ async fn install_or_passthrough(
     app_ws_port: u16,
     dnas: Vec<(Vec<u8>, String)>,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
-) -> ConductorApiResult<(InstalledAppId, u16)> {
+) -> ConductorApiResult<()> {
     let app_ids = conductor.list_active_apps().await?;
     // defaults
     let mut using_app_id = app_id.clone();
@@ -110,7 +117,8 @@ async fn install_or_passthrough(
 
     if app_ids.len() == 0 {
         println!("Don't see existing files or identity, so starting fresh...");
-        super::install_activate::install_app(&conductor, app_id.clone(), dnas, event_channel).await?;
+        super::install_activate::install_app(&conductor, app_id.clone(), dnas, event_channel)
+            .await?;
         println!("Installed, now activating...");
         super::install_activate::activate_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run
@@ -131,5 +139,9 @@ async fn install_or_passthrough(
         }
     }
 
-    Ok((using_app_id, using_app_ws_port))
+    emit(&event_channel, StateSignal::IsReady).await;
+    println!("APP_WS_PORT: {}", using_app_ws_port);
+    println!("INSTALLED_APP_ID: {}", using_app_id);
+    println!("EMBEDDED_HOLOCHAIN_IS_READY");
+    Ok(())
 }
