@@ -41,7 +41,7 @@ const SAMPLE_DNA: &'static [u8] = include_bytes!("../dna/sample/sample.dna");
 fn main() {
     // String is like "CellNick"/"SlotId"
     let dnas: Vec<(Vec<u8>, String)> = vec![(SAMPLE_DNA.into(), "sample".into())];
-    main(HcConfig {
+    blocking_main(HcConfig {
         datastore_path: String::from("databases"),
         keystore_path: String::from("keystore"),
         app_id: String::from("my-app-id"),
