@@ -22,7 +22,7 @@ pub struct HcConfig {
     pub event_channel: Option<mpsc::Sender<StateSignal>>,
 }
 
-pub fn main(hc_config: HcConfig) {
+pub fn blocking_main(hc_config: HcConfig) {
     tokio_helper::block_forever_on(async_main(hc_config))
 }
 
