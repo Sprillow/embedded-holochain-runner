@@ -10,7 +10,7 @@ use holochain_types::{
     prelude::{DnaBundle, InstalledCell},
 };
 use holochain_zome_types::CellId;
-use tokio::sync::mpsc;
+use tokio::{sync::mpsc};
 
 use crate::emit::{emit, StateSignal};
 
@@ -32,22 +32,26 @@ pub async fn install_app(
     // register any dnas
     let tasks = dnas.into_iter().map(|(dna_bytes, nick)| {
         let agent_key = agent_key.clone();
-        async move {
+        let conductor_handle_clone = conductor_handle.clone();
+        tokio::task::spawn(async move {
             println!("decoding dna bundle");
             let dna = DnaBundle::decode(&dna_bytes)?;
             println!("converting to dna file");
             let (dna_file, dna_hash) = dna.into_dna_file(None, None).await?;
             println!("calling register dna");
-            conductor_handle.register_dna(dna_file).await?;
+            conductor_handle_clone.register_dna(dna_file).await?;
             let cell_id = CellId::from((dna_hash.clone(), agent_key));
             #[allow(deprecated)]
             ConductorApiResult::Ok((InstalledCell::new(cell_id, nick), None))
-        }
+        })
     });
     // Join all the install tasks
     let cell_ids_with_proofs = futures::future::join_all(tasks)
         .await
         .into_iter()
+        .map(|result| {
+          result.unwrap()
+        })
         // Check all passed and return the proofs
         .collect::<Result<Vec<_>, _>>()?;
     emit(event_channel, StateSignal::InstallingApp).await;
