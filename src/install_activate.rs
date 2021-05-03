@@ -33,8 +33,11 @@ pub async fn install_app(
     let tasks = dnas.into_iter().map(|(dna_bytes, nick)| {
         let agent_key = agent_key.clone();
         async move {
+            println!("decoding dna bundle");
             let dna = DnaBundle::decode(&dna_bytes)?;
+            println!("converting to dna file");
             let (dna_file, dna_hash) = dna.into_dna_file(None, None).await?;
+            println!("calling register dna");
             conductor_handle.register_dna(dna_file).await?;
             let cell_id = CellId::from((dna_hash.clone(), agent_key));
             #[allow(deprecated)]
