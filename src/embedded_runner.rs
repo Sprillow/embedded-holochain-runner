@@ -6,7 +6,7 @@ use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::o
 };
 use holochain_types::app::InstalledAppId;
 use std::path::Path;
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 use tracing::*;
 
 use crate::emit::{emit, StateSignal};
@@ -23,10 +23,12 @@ pub struct HcConfig {
 }
 
 pub fn blocking_main(hc_config: HcConfig) {
-    tokio_helper::block_forever_on(async_main(hc_config))
+    tokio_helper::block_forever_on(async {
+        async_main(hc_config).await;
+    })
 }
 
-pub async fn async_main(hc_config: HcConfig) {
+pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
     // Sets up a human-readable panic message with a request for bug reports
     // See https://docs.rs/human-panic/1.0.3/human_panic/
     human_panic::setup_panic!();
@@ -76,14 +78,21 @@ pub async fn async_main(hc_config: HcConfig) {
         }
     });
 
-    // Await on the main JoinHandle, keeping the process alive until all
-    // Conductor activity has ceased
-    let result = conductor
+    let shutdown_handle = conductor
         .take_shutdown_handle()
         .await
-        .expect("The shutdown handle has already been taken.")
-        .await;
-    handle_shutdown(result);
+        .expect("The shutdown handle has already been taken.");
+
+    let (s, r) = tokio::sync::oneshot::channel::<bool>();
+    tokio::task::spawn(async move {
+        r.await.unwrap();
+        conductor.shutdown().await;
+        // Await on the main JoinHandle, keeping the process alive until all
+        // Conductor activity has ceased
+        let shutdown_result = shutdown_handle.await;
+        handle_shutdown(shutdown_result);
+    });
+    s
 }
 
 async fn conductor_handle(
