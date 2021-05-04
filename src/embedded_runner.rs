@@ -24,9 +24,8 @@ pub struct HcConfig {
 }
 
 pub fn blocking_main(hc_config: HcConfig) {
-    tokio_helper::block_on(async {}, std::time::Duration::from_millis(0));
-    let mut stream = signal(SignalKind::terminate()).unwrap();
-    tokio_helper::block_forever_on(async {
+  tokio_helper::block_forever_on(async {
+          let mut stream = signal(SignalKind::terminate()).unwrap();
           let sender = async_main(hc_config).await;
           // wait for SIGTERM
           stream.recv().await;
