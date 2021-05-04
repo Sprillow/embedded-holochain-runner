@@ -24,6 +24,7 @@ pub struct HcConfig {
 }
 
 pub fn blocking_main(hc_config: HcConfig) {
+    tokio_helper::block_on(async {}, Duration::from_millis(0));
     let mut stream = signal(SignalKind::terminate()).unwrap();
     tokio_helper::block_forever_on(async {
           let sender = async_main(hc_config).await;
