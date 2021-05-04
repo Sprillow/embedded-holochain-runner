@@ -7,7 +7,7 @@ A library that makes it VERY easy to run Holochain as a library, from your own b
 `datastore_path` is most important. If existing persisted Holochain conductor files
 are found in the given directory, it will simply re-use the `admin_ws_port` `app_ws_port` `app_id` and `dnas` from that configuration. Otherwise, it will create that directory, and setup your configuration as specified.
 
-It will pair nicely with structopt to make a configurable service. See [demo](https://github.com/Sprillow/embedded-holochain-demo).
+It will pair nicely with structopt to make a configurable service. See [a simple demo](https://github.com/Sprillow/embedded-holochain-demo). For a more advanced application using the exported `async_main` function, shutdown signal, and `StateSignal` listeners, you can see it in use in the [Acorn Holochain application](https://github.com/h-be/acorn/blob/main/conductor/src/main.rs).
 
 In either case,
 
