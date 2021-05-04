@@ -7,6 +7,7 @@ use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::o
 use holochain_types::app::InstalledAppId;
 use std::path::Path;
 use tokio::sync::{mpsc, oneshot};
+use tokio::signal::unix::{signal, SignalKind};
 use tracing::*;
 
 use crate::emit::{emit, StateSignal};
@@ -23,8 +24,13 @@ pub struct HcConfig {
 }
 
 pub fn blocking_main(hc_config: HcConfig) {
+    let mut stream = signal(SignalKind::terminate()).unwrap();
     tokio_helper::block_forever_on(async {
-        async_main(hc_config).await;
+          let sender = async_main(hc_config).await;
+          // wait for SIGTERM
+          stream.recv().await;
+          // send shutdown signal
+          sender.send(true).unwrap();
     })
 }
 
