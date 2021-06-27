@@ -9,6 +9,7 @@ use std::path::Path;
 use tokio::sync::{mpsc, oneshot};
 use tokio::signal::unix::{signal, SignalKind};
 use tracing::*;
+use holochain_util::tokio_helper;
 
 use crate::emit::{emit, StateSignal};
 

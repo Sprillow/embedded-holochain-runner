@@ -97,7 +97,7 @@ Zome `Cargo.toml`
 [dependencies]
 # use whatever hdk uses
 serde = "*"
-hdk = {git = "https://github.com/holochain/holochain.git", rev = "a6ac0439670ba367c723a80d3b8bc7c419aa5f6e", package = "hdk"}
+hdk = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "hdk"}
 ```
 
-Currently bundles Holochain version: [a6ac0439670ba367c723a80d3b8bc7c419aa5f6e (Apr 23, 2021)](https://github.com/holochain/holochain/commit/a6ac0439670ba367c723a80d3b8bc7c419aa5f6e).
+Currently bundles Holochain version: [bdb9c55d504135df39ccb1c75896557a788d0ac0 (June 25, 2021)](https://github.com/holochain/holochain/commit/bdb9c55d504135df39ccb1c75896557a788d0ac0).

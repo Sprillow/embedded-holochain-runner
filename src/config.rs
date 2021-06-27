@@ -27,9 +27,6 @@ pub fn conductor_config(
     ConductorConfig {
         environment_path: PathBuf::from(databases_path).into(),
         use_dangerous_test_keystore: false,
-        signing_service_uri: None,
-        encryption_service_uri: None,
-        decryption_service_uri: None,
         dpki: None,
         passphrase_service: None,
         keystore_path: PathBuf::from(keystore_path).into(),
