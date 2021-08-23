@@ -133,10 +133,10 @@ async fn install_or_passthrough(
 
     if app_ids.len() == 0 {
         println!("Don't see existing files or identity, so starting fresh...");
-        super::install_activate::install_app(&conductor, app_id.clone(), dnas, event_channel)
+        super::install_enable::install_app(&conductor, app_id.clone(), dnas, event_channel)
             .await?;
         println!("Installed, now enabling...");
-        super::install_activate::enable_app(&conductor, app_id, event_channel).await?;
+        super::install_enable::enable_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run
         // it will boot again at the same interface on second run
         emit(&event_channel, StateSignal::AddingAppInterface).await;

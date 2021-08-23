@@ -1,6 +1,6 @@
 mod embedded_runner;
 mod config;
-mod install_activate;
+mod install_enable;
 mod emit;
 
 pub use embedded_runner::*;

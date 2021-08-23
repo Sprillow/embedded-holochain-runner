@@ -66,6 +66,7 @@ pub async fn enable_app(
     app_id: InstalledAppId,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
+    // relates to: https://github.com/holochain/holochain/blob/55af424c2f2c2669d8253804f4e2b888abf245f2/crates/holochain/src/conductor/api/api_external/admin_interface.rs
     // Enable app
     emit(event_channel, StateSignal::EnablingApp).await;
     let (_app, mut errors) = conductor_handle.clone().enable_app(&app_id).await?;
