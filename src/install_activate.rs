@@ -1,6 +1,6 @@
 use holochain::conductor::{
     api::error::{ConductorApiError, ConductorApiResult},
-    error::CreateAppError,
+    error::ConductorError,
     CellError, ConductorHandle,
 };
 use holochain_keystore::KeystoreSenderExt;
@@ -10,7 +10,7 @@ use holochain_types::{
     prelude::{DnaBundle, InstalledCell},
 };
 use holochain_zome_types::CellId;
-use tokio::{sync::mpsc};
+use tokio::sync::mpsc;
 
 use crate::emit::{emit, StateSignal};
 
@@ -49,9 +49,7 @@ pub async fn install_app(
     let cell_ids_with_proofs = futures::future::join_all(tasks)
         .await
         .into_iter()
-        .map(|result| {
-          result.unwrap()
-        })
+        .map(|result| result.unwrap())
         // Check all passed and return the proofs
         .collect::<Result<Vec<_>, _>>()?;
     emit(event_channel, StateSignal::InstallingApp).await;
@@ -63,36 +61,25 @@ pub async fn install_app(
     Ok(())
 }
 
-pub async fn activate_app(
+pub async fn enable_app(
     conductor_handle: &ConductorHandle,
     app_id: InstalledAppId,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
-    // Activate app
-    emit(event_channel, StateSignal::ActivatingApp).await;
-    conductor_handle.activate_app(app_id.clone()).await?;
-    // Create cells
-    emit(event_channel, StateSignal::SettingUpCells).await;
-    let errors = conductor_handle.clone().setup_cells().await?;
-    // Check if this app was created successfully
-    errors
-        .into_iter()
-        // We only care about this app for the activate command
-        .find(|cell_error| match cell_error {
-            CreateAppError::Failed {
-                installed_app_id: error_app_id,
-                ..
-            } => error_app_id == &app_id,
-        })
-        // There was an error in this app so return it
-        .map(|this_app_error| {
-            let CreateAppError::Failed { errors: ee, .. } = this_app_error;
-            let b = ee[0].to_string();
-            tracing::error!("{:?}", b);
-            // TODO -> this was annoying because I couldn't Copy the
-            // real CellError
+    // Enable app
+    emit(event_channel, StateSignal::EnablingApp).await;
+    let (_app, mut errors) = conductor_handle.clone().enable_app(&app_id).await?;
+    conductor_handle
+        .get_app_info(&app_id)
+        .await?
+        .ok_or(ConductorError::AppNotInstalled(app_id))?;
+    if errors.len() > 0 {
+        if let Some((_cell_id, cell_error)) = errors.pop() {
+            Err(cell_error.into())
+        } else {
             Err(ConductorApiError::CellError(CellError::Todo))
-        })
-        // Unwrap the Option, and if None, return success
-        .unwrap_or(Ok(()))
+        }
+    } else {
+        Ok(())
+    }
 }

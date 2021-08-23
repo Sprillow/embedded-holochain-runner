@@ -1,12 +1,10 @@
 [package]
 name = "embedded_holochain_runner"
-version = "0.0.1"
+version = "0.0.103"
 authors = ["Connor Turland <connor@sprillow.com>"]
 edition = "2018"
 
 [lib]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 # use whatever hdk uses
@@ -16,13 +14,13 @@ human-panic = "1.0.3"
 # use whatever hdk uses
 tracing = "*"
 tokio = { version = "1.3", features = [ "full" ]}
-holochain_util = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain_util"}
-holochain_p2p = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain_p2p"}
-holochain_types = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain_types"}
-holochain_zome_types = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain_zome_types"}
-holochain_keystore = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain_keystore"}
-holochain = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "holochain", features = []}
-hdk = { git = "https://github.com/holochain/holochain", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "hdk" }
+holochain_util = "0.0.3"
+holochain_p2p = "0.0.3"
+holochain_types = "0.0.3"
+holochain_zome_types = "0.0.5"
+holochain_keystore = "0.0.3"
+holochain = "0.0.103"
+hdk = "0.0.103"
 
 [patch.crates-io]
 rkv = { git = "https://github.com/holochain/rkv.git", branch = "master" }

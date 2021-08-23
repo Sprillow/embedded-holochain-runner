@@ -9,8 +9,7 @@ pub enum StateSignal {
     CreatingKeys,
     RegisteringDna,
     InstallingApp,
-    ActivatingApp,
-    SettingUpCells,
+    EnablingApp,
     AddingAppInterface,
     // Done/Ready Event
     IsReady,

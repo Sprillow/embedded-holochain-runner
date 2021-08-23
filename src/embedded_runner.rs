@@ -126,7 +126,7 @@ async fn install_or_passthrough(
     dnas: Vec<(Vec<u8>, String)>,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
-    let app_ids = conductor.list_active_apps().await?;
+    let app_ids = conductor.list_running_apps().await?;
     // defaults
     let mut using_app_id = app_id.clone();
     let mut using_app_ws_port = app_ws_port.clone();
@@ -135,13 +135,13 @@ async fn install_or_passthrough(
         println!("Don't see existing files or identity, so starting fresh...");
         super::install_activate::install_app(&conductor, app_id.clone(), dnas, event_channel)
             .await?;
-        println!("Installed, now activating...");
-        super::install_activate::activate_app(&conductor, app_id, event_channel).await?;
+        println!("Installed, now enabling...");
+        super::install_activate::enable_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run
         // it will boot again at the same interface on second run
         emit(&event_channel, StateSignal::AddingAppInterface).await;
         conductor.clone().add_app_interface(app_ws_port).await?;
-        println!("Activated.");
+        println!("Enabled.");
     } else {
         println!("An existing configuration and identity was found, using that.");
         // can confidently unwrap because of the app_ids.len() check

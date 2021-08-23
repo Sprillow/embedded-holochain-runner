@@ -1,4 +1,4 @@
-use holochain::conductor::config::{AdminInterfaceConfig, ConductorConfig, InterfaceDriver};
+use holochain::conductor::config::{AdminInterfaceConfig, ConductorConfig, InterfaceDriver, PassphraseServiceConfig};
 use holochain_p2p::kitsune_p2p::{
     dependencies::url2::{self, Url2},
     KitsuneP2pConfig, ProxyConfig, TransportConfig,
@@ -28,7 +28,9 @@ pub fn conductor_config(
         environment_path: PathBuf::from(databases_path).into(),
         use_dangerous_test_keystore: false,
         dpki: None,
-        passphrase_service: None,
+        passphrase_service: PassphraseServiceConfig::DangerInsecureFromConfig {
+            passphrase: (String::from("passphrase-placeholder")),
+        },
         keystore_path: PathBuf::from(keystore_path).into(),
         admin_interfaces: Some(vec![AdminInterfaceConfig {
             driver: InterfaceDriver::Websocket { port: admin_port },
