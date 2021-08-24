@@ -24,7 +24,7 @@ it will log this to the console when the interfaces are all ready and the app in
 
 ```toml
 [dependencies]
-embedded_holochain_runner = { git = "https://github.com/Sprillow/embedded-holochain-runner.git" }
+embedded_holochain_runner = "0.0.103"
 
 [patch.crates-io]
 rkv = { git = "https://github.com/holochain/rkv.git", branch = "master" }
@@ -73,8 +73,7 @@ pub enum StateSignal {
     CreatingKeys,
     RegisteringDna,
     InstallingApp,
-    ActivatingApp,
-    SettingUpCells,
+    EnablingApp,
     AddingAppInterface,
     // Done/Ready Event, called when websocket interfaces and
     // everything else is ready
@@ -97,7 +96,7 @@ Zome `Cargo.toml`
 [dependencies]
 # use whatever hdk uses
 serde = "*"
-hdk = {git = "https://github.com/holochain/holochain.git", rev = "bdb9c55d504135df39ccb1c75896557a788d0ac0", package = "hdk"}
+hdk = "0.0.103"
 ```
 
-Currently bundles Holochain version: [bdb9c55d504135df39ccb1c75896557a788d0ac0 (June 25, 2021)](https://github.com/holochain/holochain/commit/bdb9c55d504135df39ccb1c75896557a788d0ac0).
+Currently bundles Holochain version: [0.0.103 (August 18, 2021)](https://github.com/holochain/holochain/releases/tag/holochain-0.0.103).
