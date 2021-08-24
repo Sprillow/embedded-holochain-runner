@@ -2,6 +2,8 @@
 
 A library that makes it VERY easy to run Holochain as a library, from your own binary, with great defaults
 
+You can find this crate on crates.io: https://crates.io/crates/embedded_holochain_runner
+
 ## How it will work
 
 `datastore_path` is most important. If existing persisted Holochain conductor files
