@@ -5,11 +5,12 @@ use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::o
     self, Output,
 };
 use holochain_types::app::InstalledAppId;
-use std::path::Path;
-use tokio::sync::{mpsc, oneshot};
-use tokio::signal::unix::{signal, SignalKind};
-use tracing::*;
 use holochain_util::tokio_helper;
+use std::path::Path;
+#[cfg(not(target_os = "windows"))]
+use tokio::signal::unix::{signal, SignalKind};
+use tokio::sync::{mpsc, oneshot};
+use tracing::*;
 
 use crate::emit::{emit, StateSignal};
 
@@ -25,13 +26,16 @@ pub struct HcConfig {
 }
 
 pub fn blocking_main(hc_config: HcConfig) {
-  tokio_helper::block_forever_on(async {
-          let mut stream = signal(SignalKind::terminate()).unwrap();
-          let sender = async_main(hc_config).await;
-          // wait for SIGTERM
-          stream.recv().await;
-          // send shutdown signal
-          sender.send(true).unwrap();
+    tokio_helper::block_forever_on(async {
+        #[cfg(not(target_os = "windows"))]
+        let mut stream = signal(SignalKind::terminate()).unwrap();
+        let sender = async_main(hc_config).await;
+        // wait for SIGTERM
+        #[cfg(not(target_os = "windows"))]
+        stream.recv().await;
+        // send shutdown signal
+        #[cfg(not(target_os = "windows"))]
+        sender.send(true).unwrap();
     })
 }
 
@@ -133,8 +137,7 @@ async fn install_or_passthrough(
 
     if app_ids.len() == 0 {
         println!("Don't see existing files or identity, so starting fresh...");
-        super::install_enable::install_app(&conductor, app_id.clone(), dnas, event_channel)
-            .await?;
+        super::install_enable::install_app(&conductor, app_id.clone(), dnas, event_channel).await?;
         println!("Installed, now enabling...");
         super::install_enable::enable_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run
