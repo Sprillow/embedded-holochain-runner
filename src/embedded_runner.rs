@@ -7,8 +7,6 @@ use holochain_p2p::kitsune_p2p::dependencies::kitsune_p2p_types::dependencies::o
 use holochain_types::app::InstalledAppId;
 use holochain_util::tokio_helper;
 use std::path::Path;
-#[cfg(not(target_os = "windows"))]
-use tokio::signal::unix::{signal, SignalKind};
 use tokio::sync::{mpsc, oneshot};
 use tracing::*;
 
@@ -27,15 +25,32 @@ pub struct HcConfig {
 
 pub fn blocking_main(hc_config: HcConfig) {
     tokio_helper::block_forever_on(async {
-        #[cfg(not(target_os = "windows"))]
-        let mut stream = signal(SignalKind::terminate()).unwrap();
         let sender = async_main(hc_config).await;
+        let (passthrough_sender, mut passthrough_receiver) = tokio::sync::mpsc::channel::<bool>(1);
+        tokio::task::spawn(async move {
+            passthrough_receiver.recv().await;
+            match sender.send(true) {
+                Ok(()) => {
+                    println!("succesfully sent shutdown signal to holochain");
+                }
+                Err(_) => {
+                    println!("the receiver of the oneshot sender must have been dropped");
+                    panic!()
+                }
+            };
+        });
         // wait for SIGTERM
-        #[cfg(not(target_os = "windows"))]
-        stream.recv().await;
-        // send shutdown signal
-        #[cfg(not(target_os = "windows"))]
-        sender.send(true).unwrap();
+        ctrlc::set_handler(move || {
+            // send shutdown signal
+            let sender = passthrough_sender.clone();
+            tokio::spawn(async move {
+                if let Err(_) = sender.send(true).await {
+                    println!("receiver of the passthrough_sender dropped");
+                    panic!()
+                }
+            });
+        })
+        .expect("Error setting Ctrl-C handler");
     })
 }
 
@@ -96,7 +111,14 @@ pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
 
     let (s, r) = tokio::sync::oneshot::channel::<bool>();
     tokio::task::spawn(async move {
-        r.await.unwrap();
+        match r.await {
+            Ok(b) => {
+                info!("oneshot receiver received: {}", b);
+            }
+            Err(e) => {
+                error!("oneshot receiver encountered error: {}", e);
+            }
+        };
         conductor.shutdown().await;
         // Await on the main JoinHandle, keeping the process alive until all
         // Conductor activity has ceased

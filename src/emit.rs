@@ -20,8 +20,7 @@ pub async fn emit(event_channel: &Option<mpsc::Sender<StateSignal>>, event: Stat
         match is_sender.send(event).await {
             Ok(_) => {}
             Err(e) => {
-                error!("{:?}", e.to_string());
-                panic!()
+                error!("{}", e.to_string());
             }
         };
     }
