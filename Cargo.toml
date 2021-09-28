@@ -2,7 +2,7 @@
 name = "embedded_holochain_runner"
 description = "A library that makes it VERY easy to run Holochain as a library, from your own binary, with great defaults"
 license = "CAL-1.0"
-version = "0.0.3"
+version = "0.0.4"
 authors = ["Connor Turland <connor@sprillow.com>"]
 edition = "2018"
 

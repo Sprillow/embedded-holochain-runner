@@ -39,7 +39,7 @@ pub fn blocking_main(hc_config: HcConfig) {
                 }
             };
         });
-        // wait for SIGTERM
+        // wait for SIGINT or SIGTERM
         ctrlc::set_handler(move || {
             // send shutdown signal
             let sender = passthrough_sender.clone();
@@ -112,8 +112,8 @@ pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
     let (s, r) = tokio::sync::oneshot::channel::<bool>();
     tokio::task::spawn(async move {
         match r.await {
-            Ok(b) => {
-                info!("oneshot receiver received: {}", b);
+            Ok(_) => {
+                info!("received message to perform shutdown");
             }
             Err(e) => {
                 error!("oneshot receiver encountered error: {}", e);
