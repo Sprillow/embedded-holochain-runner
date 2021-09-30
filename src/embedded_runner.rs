@@ -106,7 +106,7 @@ pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
 
     let shutdown_handle = conductor
         .take_shutdown_handle()
-        .await
+        // .await
         .expect("The shutdown handle has already been taken.");
 
     let (s, r) = tokio::sync::oneshot::channel::<bool>();
@@ -119,7 +119,7 @@ pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
                 error!("oneshot receiver encountered error: {}", e);
             }
         };
-        conductor.shutdown().await;
+        conductor.shutdown();
         // Await on the main JoinHandle, keeping the process alive until all
         // Conductor activity has ceased
         let shutdown_result = shutdown_handle.await;

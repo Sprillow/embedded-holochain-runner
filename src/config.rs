@@ -4,6 +4,7 @@ use holochain_p2p::kitsune_p2p::{
     KitsuneP2pConfig, ProxyConfig, TransportConfig,
 };
 use std::path::PathBuf;
+use holochain_types::prelude::DbSyncLevel;
 
 pub fn conductor_config(
     admin_port: u16,
@@ -28,6 +29,7 @@ pub fn conductor_config(
         environment_path: PathBuf::from(databases_path).into(),
         use_dangerous_test_keystore: false,
         dpki: None,
+        db_sync_level: DbSyncLevel::default(),
         passphrase_service: PassphraseServiceConfig::DangerInsecureFromConfig {
             passphrase: (String::from("passphrase-placeholder")),
         },
