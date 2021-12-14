@@ -9,6 +9,18 @@ edition = "2018"
 [lib]
 
 [dependencies]
+# these are just here as patches for
+#  a version mismatch with wasmer
+# can be removed in the future
+wasmer-engine-universal = "=2.0.0"
+wasmer-engine-dylib = "=2.0.0"
+wasmer-engine = "=2.0.0"
+wasmer-compiler-cranelift = "=2.0.0"
+wasmer-compiler = "=2.0.0"
+wasmer-vm = "=2.0.0"
+wasmer-derive = "=2.0.0"
+wasmer-types = "=2.0.0"
+
 base64 = "0.13.0"
 serde = "1.0.123"
 futures = "0.3.1"
