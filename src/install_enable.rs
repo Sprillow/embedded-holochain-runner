@@ -1,15 +1,14 @@
 use holochain::conductor::{
-    api::error::{ConductorApiError, ConductorApiResult},
+    api::error::{ConductorApiError, ConductorApiResult, SerializationError},
     error::ConductorError,
     CellError, ConductorHandle,
 };
-use holochain_keystore::KeystoreSenderExt;
 #[allow(deprecated)]
 use holochain_types::{
     app::InstalledAppId,
     prelude::{DnaBundle, InstalledCell},
 };
-use holochain_zome_types::CellId;
+use holochain_zome_types::{CellId, SerializedBytes, SerializedBytesError, UnsafeBytes};
 use tokio::sync::mpsc;
 
 use crate::emit::{emit, StateSignal};
@@ -18,6 +17,7 @@ pub async fn install_app(
     conductor_handle: &ConductorHandle,
     app_id: InstalledAppId,
     dnas: Vec<(Vec<u8>, String)>,
+    membrane_proof: Option<String>,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
     emit(event_channel, StateSignal::CreatingKeys).await;
@@ -25,14 +25,19 @@ pub async fn install_app(
     let agent_key = conductor_handle
         .keystore()
         .clone()
-        .generate_sign_keypair_from_pure_entropy()
+        .new_sign_keypair_random()
         .await?;
     emit(event_channel, StateSignal::RegisteringDna).await;
-    println!("Your new private keys are generated, continuing with the installation...");
+    println!(
+        "Your new key pair is generated, the public key is: {:?}",
+        agent_key
+    );
+    println!("continuing with the installation...");
     // register any dnas
     let tasks = dnas.into_iter().map(|(dna_bytes, nick)| {
         let agent_key = agent_key.clone();
         let conductor_handle_clone = conductor_handle.clone();
+        let proof_cloned = membrane_proof.clone();
         tokio::task::spawn(async move {
             println!("decoding dna bundle");
             let dna = DnaBundle::decode(&dna_bytes)?;
@@ -41,8 +46,27 @@ pub async fn install_app(
             println!("calling register dna");
             conductor_handle_clone.register_dna(dna_file).await?;
             let cell_id = CellId::from((dna_hash.clone(), agent_key));
+            // if there's a membrane proof
+            // decode it from base64 using default options
+            // and construct SerializedBytes from it
+            let membrane_proof = match proof_cloned {
+                Some(string_proof) => match base64::decode(string_proof) {
+                    Ok(res) => {
+                        let unsafe_bytes = UnsafeBytes::from(res);
+                        Some(SerializedBytes::from(unsafe_bytes))
+                    }
+                    Err(_e) => {
+                        return Err(ConductorApiError::SerializationError(
+                            SerializationError::Bytes(SerializedBytesError::Deserialize(
+                                "couldnt decode base64".to_string(),
+                            )),
+                        ))
+                    }
+                },
+                None => None,
+            };
             #[allow(deprecated)]
-            ConductorApiResult::Ok((InstalledCell::new(cell_id, nick), None))
+            ConductorApiResult::Ok((InstalledCell::new(cell_id, nick), membrane_proof))
         })
     });
     // Join all the install tasks

@@ -19,6 +19,7 @@ pub struct HcConfig {
     pub app_ws_port: u16,
     pub datastore_path: String,
     pub keystore_path: String,
+    pub membrane_proof: Option<String>,
     pub proxy_url: String,
     pub event_channel: Option<mpsc::Sender<StateSignal>>,
 }
@@ -92,6 +93,7 @@ pub async fn async_main(hc_config: HcConfig) -> oneshot::Sender<bool> {
             hc_config.app_id,
             hc_config.app_ws_port,
             hc_config.dnas,
+            hc_config.membrane_proof,
             &hc_config.event_channel,
         )
         .await
@@ -150,6 +152,7 @@ async fn install_or_passthrough(
     app_id: InstalledAppId,
     app_ws_port: u16,
     dnas: Vec<(Vec<u8>, String)>,
+    membrane_proof: Option<String>,
     event_channel: &Option<mpsc::Sender<StateSignal>>,
 ) -> ConductorApiResult<()> {
     let app_ids = conductor.list_running_apps().await?;
@@ -159,7 +162,7 @@ async fn install_or_passthrough(
 
     if app_ids.len() == 0 {
         println!("Don't see existing files or identity, so starting fresh...");
-        super::install_enable::install_app(&conductor, app_id.clone(), dnas, event_channel).await?;
+        super::install_enable::install_app(&conductor, app_id.clone(), dnas, membrane_proof, event_channel).await?;
         println!("Installed, now enabling...");
         super::install_enable::enable_app(&conductor, app_id, event_channel).await?;
         // add a websocket interface on the first run

@@ -1,16 +1,18 @@
-use holochain::conductor::config::{AdminInterfaceConfig, ConductorConfig, InterfaceDriver, PassphraseServiceConfig};
+use holochain::conductor::config::{
+    AdminInterfaceConfig, ConductorConfig, InterfaceDriver, KeystoreConfig,
+};
 use holochain_p2p::kitsune_p2p::{
     dependencies::url2::{self, Url2},
     KitsuneP2pConfig, ProxyConfig, TransportConfig,
 };
-use std::path::PathBuf;
 use holochain_types::prelude::DbSyncLevel;
+use std::path::PathBuf;
 
 pub fn conductor_config(
     admin_port: u16,
     databases_path: &str,
     keystore_path: &str,
-    proxy_url: &str
+    proxy_url: &str,
 ) -> ConductorConfig {
     // Build the conductor configuration
     let mut network_config = KitsuneP2pConfig::default();
@@ -22,18 +24,17 @@ pub fn conductor_config(
             override_port: None,
         }),
         proxy_config: ProxyConfig::RemoteProxyClient {
-          proxy_url: Url2::parse(proxy_url)
-        }
+            proxy_url: Url2::parse(proxy_url),
+        },
     });
     ConductorConfig {
         environment_path: PathBuf::from(databases_path).into(),
-        use_dangerous_test_keystore: false,
         dpki: None,
         db_sync_level: DbSyncLevel::default(),
-        passphrase_service: PassphraseServiceConfig::DangerInsecureFromConfig {
-            passphrase: (String::from("passphrase-placeholder")),
+        keystore: KeystoreConfig::LairServerLegacyDeprecated {
+            keystore_path: Some(PathBuf::from(keystore_path)),
+            danger_passphrase_insecure_from_config: (String::from("passphrase-placeholder")),
         },
-        keystore_path: PathBuf::from(keystore_path).into(),
         admin_interfaces: Some(vec![AdminInterfaceConfig {
             driver: InterfaceDriver::Websocket { port: admin_port },
         }]),
